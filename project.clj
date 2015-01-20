@@ -15,9 +15,14 @@
                  [korma "0.4.0"]
                  [http-kit "2.1.19"]
                  [com.taoensso/timbre "3.3.1"]
+                 [environ "1.0.0"]
                  [liberator "0.12.2"]]
 
    :main caas.core
+
+   ; Have ragtime default to loading the database URL from an environment
+   ; variable so that we don't keep production credentials in our source
+   ; code but added via Puppet. Note that for our dev environment this needs to be set manually.
    :ragtime {:migrations ragtime.sql.files/migrations
              :database (System/getenv "CAAS_DB_URL")}
    :profiles
