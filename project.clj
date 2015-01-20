@@ -19,6 +19,8 @@
 
    :main caas.core
    :ragtime {:migrations ragtime.sql.files/migrations
-             :database (System/getenv "CAAS_DB_URL")})
+             :database (System/getenv "CAAS_DB_URL")}
+   :profiles
+     {:test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}}})
 
 
