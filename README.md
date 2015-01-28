@@ -29,7 +29,7 @@ lein repl
 
 (in-ns 'caas.models)
 
-(def user {:email "foo@baz.de" password: "foobaz"})
+(def user {:email "foo@baz.de" :password "foobaz"})
 
 (add-user! user)
 ```
