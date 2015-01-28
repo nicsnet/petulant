@@ -2,7 +2,7 @@
 
 Crealytics Authentication and Authorisation Service.
 
-A 'micro service' designed to authenticate users returning a generated JWS token for authorization purposes.
+A 'micro service' designed to authenticate users returning a generated JWS token for authorisation purposes.
 
 ## Setup
 
@@ -16,7 +16,7 @@ The database port may be different on your machine.
 
 TODO: The database config for the usage with korma http://sqlkorma.com/ is still hardcoded into src/caas/models.clj, so this needs to be replaced with an environment config.
 
-One you've created a database named: cass with the user: caas and password: cassonade things are good to go, and you can run migrations with ragtime
+One you've created a database named: caas with the user: caas and password: cassonade things are good to go, and you can run migrations with ragtime
 
 ```clojure
 lein ragtime migrate
@@ -44,7 +44,7 @@ Start the server with
 lein ring server
 ```
 
-This starts a server on localhost:3000.
+This starts a server on http://localhost:3000
 
 ```
 curl -v -X GET http://localhost:3000/authenticate\?email\=foo@baz.de\&password\=foobaz
@@ -56,15 +56,13 @@ Querying this route will return a signed JWS token.
 eyJ0eXAiOiJKV1MiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZvb0BiYXouZGUifQ.RA9A1xT_YJ-Xi5_2B9nASNgQ5FKGXOai1yy0nWqgq7k%
 ```
 
+## TODOs
 
+Return user permissions in the JWS token.
 
+Create a public/ private keypair for signing and unsigning the token -> http://funcool.github.io/buddy-sign/latest/#_using_digital_signature_keys_for_signing
 
+Let the services requesting the token for authorisation purposes do the token unsigning themselves using the public key.
 
+Or create a route for token unsigning that is only accessible in the internal network.
 
-
-## License
-
-Copyright © 2015 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
