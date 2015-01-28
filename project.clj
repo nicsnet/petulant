@@ -12,6 +12,8 @@
                  [ring/ring-core "1.3.2"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]
                  [buddy "0.2.3"]
+                 [buddy/buddy-sign "0.3.0"]
+                 [buddy/buddy-hashers "0.3.0"]
                  [korma "0.4.0"]
                  [http-kit "2.1.19"]
                  [com.taoensso/timbre "3.3.1"]

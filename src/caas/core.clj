@@ -1,31 +1,51 @@
 (ns caas.core
+  (:use caas.models)
   (:require [liberator.core :refer [resource defresource]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :as reload]
+            [ring.middleware.session :refer [wrap-session]]
             [org.httpkit.server :as http-kit]
             [taoensso.timbre :as timbre]
-            [compojure.core :refer [defroutes ANY]]))
+            [buddy.auth :refer [authenticated? throw-unauthorized]]
+            [buddy.auth.backends.session :refer [session-backend]]
+            [buddy.auth.backends.token :refer :all]
+            [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
+            [buddy.hashers :as hashers]
+            [buddy.sign.generic :as sign]
+            [buddy.sign.jws :as jws]
+            [buddy.core.keys :as ks]
+            [clj-time.core :as t]
+            [compojure.core :refer [context defroutes ANY routes]]))
 
 ;; authorized?, then allowed?
 
 (defresource authenticate-user
   :allowed-methods [:get, :post]
-  :available-media-types ["text/json"]
-  :handle-ok (fn [_] "Hello, Internet"))
+  :available-media-types ["application/json"]
+  :exists? (fn [context]
+             (let [password (get-in context [:request :params "password"])
+                   email (get-in context [:request :params "email"])]
+             (if-let [user (user-find-by-email email)]
+               (if (hashers/check password (get user :password))
+                 {:token (jws/sign (dissoc user :password) "secret")}))))
 
-(defresource authorize-user [app_name resource_name action token]
-  :allowed-methods [:get]
-  :available-media-types ["text/json"]
-  :handle-ok (fn [_] "Hello, Internet"))
+  :handle-not-found (fn [_] (throw-unauthorized))
+  :handle-ok (fn [context] (get context :token)))
 
 (defroutes app
-    (ANY "/authenticate" [] authenticate-user )
-    (ANY "/authorize" [app_name resource_name action token] authorize-user)
-    (ANY "/configuration" [token]))
+    (ANY "/authenticate" [] authenticate-user))
+
+;; Create an instance of auth backend.
+
+(def auth-backend
+  (session-backend))
 
 (def handler
     (-> app
-        wrap-params))
+      (wrap-authorization auth-backend)
+      (wrap-authentication auth-backend)
+      (wrap-params)
+      (wrap-session)))
 
 ;contains function that can be used to stop http-kit server
 (defonce server

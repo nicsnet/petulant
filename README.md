@@ -1,6 +1,8 @@
 # caas
 
-A Clojure library designed to ... well, that part is up to you.
+Crealytics Authentication and Authorization Service.
+
+A 'micro service' designed to authenticate users returning a generated JWS token for authorization purposes.
 
 ## Usage
 
