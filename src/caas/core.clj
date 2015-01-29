@@ -13,8 +13,6 @@
             [buddy.hashers :as hashers]
             [buddy.sign.generic :as sign]
             [buddy.sign.jws :as jws]
-            [buddy.core.keys :as ks]
-            [clj-time.core :as t]
             [compojure.core :refer [context defroutes ANY routes]]))
 
 ;; authorized?, then allowed?
