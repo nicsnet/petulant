@@ -11,17 +11,12 @@
 (declare users)
 
 (defentity permissions
-  (pk :id)
-  (table :permissions)
   (belongs-to users)
-  (entity-fields :user_id :name))
-
+  (entity-fields :name))
 
 (defentity users
-  (pk :id)
-  (table :users)
   (has-many permissions)
-  (entity-fields :email :password))
+  (entity-fields :id :email :password :user_id))
 
 (defn create [user]
   (insert users
@@ -42,6 +37,7 @@
 (defn find-by [field value]
   (first
     (select users
+      (with permissions)
       (where {field value})
       (limit 1))))
 
