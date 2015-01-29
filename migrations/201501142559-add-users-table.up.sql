@@ -7,7 +7,8 @@ CREATE OR REPLACE FUNCTION update_updated_at_column()
 ' LANGUAGE 'plpgsql';
 
 CREATE TABLE users (
-  id serial PRIMARY KEY,
+  id serial primary key,
+  user_id int not null unique,
   email varchar(40) not null unique,
   password varchar(255) not null,
   created_at timestamp not null default CURRENT_TIMESTAMP,

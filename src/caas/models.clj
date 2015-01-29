@@ -8,20 +8,19 @@
                      :host "localhost"
                      :port 15432 }))
 
-(defentity user_roles)
-
-(defentity roles
-  (has-many user_roles))
-
-(defentity applications
-  (has-many roles))
-
 (declare users)
+
+(defentity permissions
+  (pk :id)
+  (table :permissions)
+  (belongs-to users)
+  (entity-fields :user_id :name))
+
 
 (defentity users
   (pk :id)
   (table :users)
-  (has-many user_roles)
+  (has-many permissions)
   (entity-fields :email :password))
 
 (defn create [user]
