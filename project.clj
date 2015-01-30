@@ -9,7 +9,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [compojure "1.3.1"]
                  [ragtime "0.3.8"]
-                 [ring/ring-core "1.3.2"]
+                 [ring "1.3.2"]
                  [org.postgresql/postgresql "9.3-1102-jdbc41"]
                  [buddy/buddy-auth "0.3.0"]
                  [buddy/buddy-sign "0.3.0"]
@@ -18,6 +18,7 @@
                  [http-kit "2.1.19"]
                  [com.taoensso/timbre "3.3.1"]
                  [environ "1.0.0"]
+                 [midje "1.6.3"]
                  [liberator "0.12.2"]]
 
    :main caas.core
@@ -28,6 +29,7 @@
    :ragtime {:migrations ragtime.sql.files/migrations
              :database (System/getenv "CAAS_DB_URL")}
    :profiles
-     {:test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}}})
+     {:dev {:dependencies [[midje "1.6.3"]]}}
+     :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}})
 
 
