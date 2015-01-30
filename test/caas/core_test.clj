@@ -4,7 +4,12 @@
 
 
 (facts "a request to /authenticate authenticates a user and returns a token"
-  ;;(let [handler (ANY ∞ )
+  (let [handler (ANY "/authenticate" authenticate-user)
+         response (handler (request :get "/"))]
+         response => OK
+         response => (body "Hello World!")
+         response => (content-type "text/plain;charset=UTF-8")
+         ))
   (fact "it normally returns the first element"
     (first-element [1 2 3] :default) => 1
     (first-element '(1 2 3) :default) => 1)

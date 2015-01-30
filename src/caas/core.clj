@@ -11,33 +11,52 @@
             [buddy.auth.backends.token :refer :all]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [buddy.hashers :as hashers]
-            [buddy.sign.generic :as sign]
+            [buddy.sign.generic :refer [sign unsign]]
             [buddy.sign.jws :as jws]
+            [buddy.core.keys :as keys]
             [compojure.core :refer [context defroutes ANY routes]]))
+
+;; create key instances
+(def ec-privkey (keys/private-key "ecprivkey.pem"))
+
+(def ec-pubkey (keys/public-key "ecpubkey.pem"))
 
 ;; authorized?, then allowed?
 
 (defresource authenticate-user
-  :allowed-methods [:get, :post]
+  :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [context]
              (let [password (get-in context [:request :params "password"])
                    email (get-in context [:request :params "email"])]
              (if-let [user (user-find-by-email email)]
                (if (hashers/check password (get user :password))
-                 {:token (jws/sign (dissoc user :password) "secret")}))))
+                 {:token (jws/sign (dissoc user :password) ec-privkey {:alg :es256})}))))
 
   :handle-not-found (fn [_] (throw-unauthorized))
   :handle-ok (fn [context] (get context :token)))
 
-(defroutes app
-    (ANY "/authenticate" [] authenticate-user))
+(defresource authorize-user
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :exists? (fn [context]
+             (if-let [token (get-in context [:request :params "token"])]
+               (try
+                 (jws/unsign token ec-pubkey {:alg :es256})
+                 (catch Exception e (throw-unauthorized)))))
 
+  :handle-not-found (fn [_] (throw-unauthorized))
+  :handle-ok (fn [context] (get context :permissions)))
+
+(defroutes app
+  (ANY "/authenticate" [] authenticate-user)
+  (ANY "/permissions" [] authorize-user))
 
 (defn first-element [sequence default]
     (if (empty? sequence)
           default
           (first sequence)))
+
 ;; Create an instance of auth backend.
 
 (def auth-backend
