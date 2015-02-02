@@ -19,6 +19,7 @@
                  [http-kit "2.1.19"]
                  [com.taoensso/timbre "3.3.1"]
                  [environ "1.0.0"]
+                 [cheshire "5.4.0"]
                  [liberator "0.12.2"]]
 
    :main caas.core
