@@ -24,8 +24,9 @@
 ;; authorized?, then allowed?
 
 (defresource authenticate-user
-  :allowed-methods [:get]
+  :allowed-methods [:get :post]
   :available-media-types ["application/json"]
+  :processible? (fn [context] (if-let [email (get-in context [:request :params "email"])] {:email email}))
   :exists? (fn [context]
              (let [password (get-in context [:request :params "password"])
                    email (get-in context [:request :params "email"])]
@@ -48,7 +49,13 @@
   :handle-not-found (fn [_] (throw-unauthorized))
   :handle-ok (fn [context] (get context :permissions)))
 
+(defresource home
+  :allowed-methods [:get]
+  :available-media-types ["application/json"]
+  :handle-ok (fn [_] "Hello Internetz."))
+
 (defroutes app
+  (ANY "/" [] home)
   (ANY "/authenticate" [] authenticate-user)
   (ANY "/permissions" [] authorize-user))
 

@@ -18,7 +18,6 @@
                  [http-kit "2.1.19"]
                  [com.taoensso/timbre "3.3.1"]
                  [environ "1.0.0"]
-                 [midje "1.6.3"]
                  [liberator "0.12.2"]]
 
    :main caas.core
@@ -29,7 +28,8 @@
    :ragtime {:migrations ragtime.sql.files/migrations
              :database (System/getenv "CAAS_DB_URL")}
    :profiles
-     {:dev {:dependencies [[midje "1.6.3"]]}}
+     {:dev {:dependencies [[midje "1.6.3"]
+                           [ring-mock "0.1.5"]]}}
      :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}})
 
 

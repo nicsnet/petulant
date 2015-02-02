@@ -4,6 +4,10 @@ Crealytics Authentication and Authorisation Service.
 
 A 'micro service' designed to authenticate users returning a generated JWS token for authorisation purposes.
 
+## Prerequisites
+
+You will need Leiningen https://github.com/technomancy/leiningen 2.0.0 or above installed.
+
 ## Setup
 
 This project is still heavily under development, so setting things up is still a little quirky.
@@ -14,7 +18,6 @@ Mine looks like this: CAAS_DB_URL=jdbc:postgresql://localhost:15432/caas?user=ca
 
 The database port may be different on your machine.
 
-TODO: The database config for the usage with korma http://sqlkorma.com/ is still hardcoded into src/caas/models.clj, so this needs to be replaced with an environment config.
 
 One you've created a database named: caas with the user: caas and password: cassonade things are good to go, and you can run migrations with ragtime
 
@@ -38,7 +41,7 @@ This creates a user with the email "foo@baz.de" and stores the password in a has
 
 ## Usage
 
-Start the server with 
+Start the server with
 
 ```clojure
 lein ring server
@@ -56,13 +59,23 @@ Querying this route will return a signed JWS token.
 eyJ0eXAiOiJKV1MiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZvb0BiYXouZGUifQ.RA9A1xT_YJ-Xi5_2B9nASNgQ5FKGXOai1yy0nWqgq7k%
 ```
 
+Once the token for this authenticated user is obtained, it can be used to query for permissions, e.g.
+
+```
+curl -v -X GET http://localhost:3000/permissions\?token=
+eyJ0eXAiOiJKV1MiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZvb0BiYXouZGUifQ.RA9A1xT_YJ-Xi5_2B9nASNgQ5FKGXOai1yy0nWqgq7k%
+```
+
+This returns
+
+```
+{name:permission_name}
+
+```
+
+When a user cannot be authenticated or the JWT token string is not valid a HTTP code 401 "Unauthorized" is returned.
+
 ## TODOs
 
-Return user permissions in the JWS token.
-
-Create a public/ private keypair for signing and unsigning the token -> http://funcool.github.io/buddy-sign/latest/#_using_digital_signature_keys_for_signing
-
-Let the services requesting the token for authorisation purposes do the token unsigning themselves using the public key.
-
-Or create a route for token unsigning that is only accessible in the internal network.
+TODO: The database config for the usage with korma http://sqlkorma.com/ is still hardcoded into src/caas/models.clj, so this needs to be replaced with an environment config.
 
