@@ -56,13 +56,8 @@
 
 (defroutes app
   (ANY "/" [] home)
-  (ANY "/authenticate" [] authenticate-user)
-  (ANY "/permissions" [] authorize-user))
-
-(defn first-element [sequence default]
-    (if (empty? sequence)
-          default
-          (first sequence)))
+  (ANY "/caas/authenticate" [] authenticate-user)
+  (ANY "/caas/permissions" [] authorize-user))
 
 ;; Create an instance of auth backend.
 

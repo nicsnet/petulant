@@ -40,6 +40,8 @@
                    :caas-db-host "localhost"
                    :caas-db-port "15432" }}
      :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}
+            :dependencies [[midje "1.6.3"]
+                           [ring-mock "0.1.5"]]
              :env {:caas-db "caas_test"
                    :caas-db-user "caas_test"
                    :caas-db-pass "cassonade_test"

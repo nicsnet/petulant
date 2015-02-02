@@ -25,7 +25,7 @@ after 'deploy:publishing', 'deploy:restart'
 namespace :deploy do
 
   task :restart do
-    invoke 'unicorn:restart'
+    # something
   end
 
   after :restart, :clear_cache do
