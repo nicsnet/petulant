@@ -1,12 +1,13 @@
 (ns caas.models
   (:use korma.core korma.db)
-  (:require [buddy.hashers :as hashers]))
+  (:require [buddy.hashers :as hashers]
+            [environ.core :refer [env]]))
 
-(defdb db (postgres {:db "caas"
-                     :user "caas"
-                     :password "cassonade"
-                     :host "localhost"
-                     :port 15432 }))
+(defdb db (postgres {:db (get env :caas-db)
+                     :user (get env :caas-db-user)
+                     :password (get env :caas-db-pass)
+                     :host (get env :caas-db-host)
+                     :port (get env :caas-db-port)}))
 
 (declare users)
 

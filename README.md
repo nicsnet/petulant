@@ -77,5 +77,4 @@ When a user cannot be authenticated or the JWT token string is not valid a HTTP 
 
 ## TODOs
 
-TODO: The database config for the usage with korma http://sqlkorma.com/ is still hardcoded into src/caas/models.clj, so this needs to be replaced with an environment config.
-
+Some sort of basic HTTP authentication.

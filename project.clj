@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :plugins [[lein-ring "0.8.11"]
+            [lein-environ "1.0.0"]
             [ragtime/ragtime.lein "0.3.8"]]
   :ring {:handler caas.core/handler}
   :dependencies [[org.clojure/clojure "1.6.0"]
@@ -26,10 +27,22 @@
    ; variable so that we don't keep production credentials in our source
    ; code but added via Puppet. Note that for our dev environment this needs to be set manually.
    :ragtime {:migrations ragtime.sql.files/migrations
-             :database (System/getenv "CAAS_DB_URL")}
+             :database ~(System/getenv "CAAS_DB_URL")}
    :profiles
      {:dev {:dependencies [[midje "1.6.3"]
-                           [ring-mock "0.1.5"]]}}
-     :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}})
+                           [ring-mock "0.1.5"]]
+             ; Since we are using environ, we can override these values with
+             ; environment variables in production.
+             :env {:caas-db "caas"
+                   :caas-db-user "caas"
+                   :caas-db-pass "cassonade"
+                   :caas-db-host "localhost"
+                   :caas-db-port "15432" }}
+     :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}
+             :env {:caas-db "caas_test"
+                   :caas-db-user "caas_test"
+                   :caas-db-pass "cassonade_test"
+                   :caas-db-host "localhost"
+                   :caas-db-port "15432"}}})
 
 
