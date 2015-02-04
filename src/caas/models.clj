@@ -32,6 +32,14 @@
     (delete users
     (where {:id (user :id)})))
 
+(defn delete-permission [permission]
+  (delete permissions
+  (where {:id (permission :id)})))
+
+(defn create-permission [permission]
+  (insert permissions
+    (values permission)))
+
 (defn users-all []
   (select users))
 

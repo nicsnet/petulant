@@ -2,6 +2,7 @@
   (:use midje.sweet
         ring.mock.request)
   (:require [clojure.test :refer :all]
+            [caas.models :refer :all]
             [korma.db :as db]
             [cheshire.core :as json]
             [caas.core :refer :all]))
@@ -10,14 +11,18 @@
   (fact "it greets us"
     (let [response (app (request :get "/"))]
        (:status response) => 200
-       (get-in response [:headers "Content-Type"]) => "application/json;charset=UTF-8"
        (:body response) => "Hello Internetz.")))
 
-(facts "a request to /caas/authenticate authenticates a user and returns a token"
-  (fact "with incorrect credentials"
-     (let [response (app (-> (request :post "/caas/authenticate")
-                             (body "{\"email\":\"doge@coin.com\",\"password\":\"muchwow\"}")
-                             (content-type "application/json")
-                             (header "Accept" "application/json")))]
-        (:status response) => 201
-        (:body response) => nil)))
+(facts "permissions CRUD"
+  (let [user {:id 42 :email "such@doge.de" :password "muchwow" :user_id 42}]
+
+   (with-state-changes [(before :facts (add-user! user))(after :facts (delete-user user))(after :facts (delete-permission perm))]
+
+      (fact "GET to /caas/users/:id/permissions return the permissions for a given user"
+        (create-permission {:id 42 :name "suchpermission" :users_id 42})
+          (let [response (app (-> (request :get "/caas/users/42/permissions")))]
+
+            (:status response) => 200
+            (:body response) => "[{\"name\":\"suchpermission\"}]"))
+
+      (fact "POST to /caas/users/:id/permissions creates a new permission for a given user"))))

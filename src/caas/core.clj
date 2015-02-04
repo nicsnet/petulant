@@ -35,7 +35,9 @@
                  {:token (jws/sign (dissoc user :password) ec-privkey {:alg :es256})}))))
 
   :handle-not-found (fn [_] (throw-unauthorized))
-  :handle-ok (fn [context] (get context :token)))
+  :handle-ok (fn [context] (get context :token))
+  :post! (fn [_] [true])
+  :handle-created (fn [context] (get context :token)))
 
 (defresource authorize-user
   :allowed-methods [:get]
@@ -54,10 +56,17 @@
   :available-media-types ["application/json"]
   :handle-ok (fn [_] "Hello Internetz."))
 
+(defresource user-permissions [id]
+  :allowed-methods [:get]
+  :exists? (fn [context] (if-let [user (find-by :user_id (Integer/parseInt id))]
+                           {:permissions (:permissions user)}))
+  :handle-ok (fn [context] (get context :permissions)))
+
 (defroutes app
   (ANY "/" [] home)
   (ANY "/caas/authenticate" [] authenticate-user)
-  (ANY "/caas/permissions" [] authorize-user))
+  (ANY "/caas/authorize" [] authorize-user)
+  (ANY "/caas/users/:id/permissions" [id] (user-permissions id)))
 
 ;; Create an instance of auth backend.
 
@@ -66,9 +75,9 @@
 
 (def handler
     (-> app
+      (wrap-params)
       (wrap-authorization auth-backend)
       (wrap-authentication auth-backend)
-      (wrap-params)
       (wrap-session)))
 
 ;contains function that can be used to stop http-kit server
