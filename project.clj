@@ -34,12 +34,12 @@
                            [ring-mock "0.1.5"]]
              ; Since we are using environ, we can override these values with
              ; environment variables in production.
-             :env {:caas-db "caas"
-                   :caas-db-user "caas"
-                   :caas-db-pass "cassonade"
-                   :caas-db-host "localhost"
-                   :caas-db-port "15432" }}
-     :test {:ragtime {:database "jdbc:postgresql://localhost:15432/caas_test?user=caas_test&password=cassonade_test"}
+             :env {:caas-db ~(System/getenv "CAAS_DB")
+                   :caas-db-user ~(System/getenv "CAAS_DB_USER")
+                   :caas-db-pass ~(System/getenv "CAAS_DB_PASS")
+                   :caas-db-host ~(System/getenv "CAAS_DB_HOST")
+                   :caas-db-port ~(System/getenv "CAAS_DB_PORT")}}
+     :test {:ragtime {:database ~(System/getenv "CAAS_DB_URL_TEST")}
             :dependencies [[midje "1.6.3"]
                            [ring-mock "0.1.5"]]
              :env {:caas-db "caas_test"

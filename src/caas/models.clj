@@ -37,8 +37,10 @@
   (where {:id (permission :id)})))
 
 (defn create-permission [permission]
-  (insert permissions
-    (values permission)))
+  (try
+   (insert permissions
+    (values permission))
+    (catch Exception e false)))
 
 (defn users-all []
   (select users))
@@ -48,6 +50,12 @@
     (select users
       (with permissions)
       (where {field value})
+      (limit 1))))
+
+(defn user-permissions-for-name [user_id permission-name]
+  (first
+    (select permissions
+     (where {:users_id user_id :name permission-name})
       (limit 1))))
 
 (defn user-find-by-email [email]

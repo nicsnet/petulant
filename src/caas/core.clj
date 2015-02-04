@@ -14,7 +14,8 @@
             [buddy.sign.generic :refer [sign unsign]]
             [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
-            [compojure.core :refer [context defroutes ANY routes]]))
+            [cheshire.core :refer :all]
+            [compojure.core :refer [context defroutes ANY GET POST routes]]))
 
 ;; create key instances
 (def ec-privkey (keys/private-key "ecprivkey.pem"))
@@ -58,15 +59,29 @@
 
 (defresource user-permissions [id]
   :allowed-methods [:get]
+  :available-media-types ["application/json"]
   :exists? (fn [context] (if-let [user (find-by :user_id (Integer/parseInt id))]
                            {:permissions (:permissions user)}))
   :handle-ok (fn [context] (get context :permissions)))
+
+(defresource create-user-permission [user-id]
+  :allowed-methods [:post]
+  :available-media-types ["application/json"]
+  :processible? false
+  :post! (fn [context] (let [body (slurp (get-in context [:request :body]))]
+                         (when-not (create-permission (parse-string body) )
+                            {::post-conflict true})))
+  :handle-moved-permantently (fn [{conflict ::post-conflict}]
+                            (when conflict
+                           (liberator.representation/ring-response {:status 409 :body "duplicate key!"}))))
+
 
 (defroutes app
   (ANY "/" [] home)
   (ANY "/caas/authenticate" [] authenticate-user)
   (ANY "/caas/authorize" [] authorize-user)
-  (ANY "/caas/users/:id/permissions" [id] (user-permissions id)))
+  (POST "/caas/users/:id/permissions" [id] (create-user-permission id))
+  (GET "/caas/users/:id/permissions" [id] (user-permissions id)))
 
 ;; Create an instance of auth backend.
 

@@ -5,9 +5,9 @@
             [clojure.test :refer :all]
             [environ.core :refer [env]]))
 
-(let [user {:id 42 :email "much@test" :password "suchwow" :user_id 42}])
 
 (facts "add users"
+  (let [user {:id 42 :email "much@test" :password "suchwow" :user_id 42}]
   (with-state-changes [(around :facts (?form (delete-user user)))]
   (fact "add-user! creates a user with password and hashes the password in the db"
     (let [new-user (add-user! user)]
@@ -23,5 +23,5 @@
 
     (:id found-user) => 42
     (:user_id found-user) => 42
-    (:email found-user) => "much@test"))))
+    (:email found-user) => "much@test")))))
 
