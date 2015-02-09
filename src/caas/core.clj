@@ -1,7 +1,7 @@
 (ns caas.core
-  (:use caas.models)
-  (:require [liberator.core :refer [resource defresource]]
-            [ring.middleware.params :refer [wrap-params]]
+  (:use caas.models liberator.core
+        [liberator.representation :only [ring-response]])
+ (:require  [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :as reload]
             [ring.middleware.session :refer [wrap-session]]
             [org.httpkit.server :as http-kit]
@@ -67,14 +67,13 @@
 (defresource create-user-permission [user-id]
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :processible? false
+  :can-post-to-missing? false
   :post! (fn [context] (let [body (slurp (get-in context [:request :body]))]
-                         (when-not (create-permission (parse-string body) )
-                            {::post-conflict true})))
-  :handle-moved-permantently (fn [{conflict ::post-conflict}]
-                            (when conflict
-                           (liberator.representation/ring-response {:status 409 :body "duplicate key!"}))))
-
+                        (if-not (create-permission (parse-string body) )
+                            {::conflict true})))
+  :handle-created (fn [{conflict ::conflict}]
+                    (when conflict
+                      (ring-response {:status 409 :body "Permission already exists, derpy!"}))))
 
 (defroutes app
   (ANY "/" [] home)
