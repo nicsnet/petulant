@@ -23,6 +23,7 @@
                  [liberator "0.12.2"]]
 
    :main caas.core
+   :auto-clean false
 
    ; Have ragtime default to loading the database URL from an environment
    ; variable so that we don't keep production credentials in our source
@@ -30,7 +31,8 @@
    :ragtime {:migrations ragtime.sql.files/migrations
              :database ~(System/getenv "CAAS_DB_URL")}
    :profiles
-     {:dev {:dependencies [[midje "1.6.3"]
+     {:uberjar {:aot :all}
+       :dev {:dependencies [[midje "1.6.3"]
                            [ring-mock "0.1.5"]]
              ; Since we are using environ, we can override these values with
              ; environment variables in production.
