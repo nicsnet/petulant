@@ -24,15 +24,14 @@
           (let [response (app (-> (request :get "/caas/users/42/permissions")))]
 
             (:status response) => 200
-            (:body response) => "[{\"name\":\"suchpermission\"}]"))
+            (:body response) => "[{\"id\":88,\"users_id\":42,\"name\":\"suchpermission\"}]"))
 
       (fact "POST to /caas/users/:id/permissions creates a new permission for a given user"
         (let [response (app (-> (request :post "/caas/users/42/permissions")
                                 (body (generate-string perm) )
                                 (content-type "application/json")
                                 (header "Accept" "application/json")))]
-            (:status response) => 201
-            (:body response) => ""))
+            (:status response) => 201))
 
       (fact "POST to /caas/users/:id/permissions does not create a new permission if this permission already exists for the user"
         (create-permission perm)
@@ -41,4 +40,21 @@
                                 (content-type "application/json")
                                 (header "Accept" "application/json")))]
             (:status response) => 409
-            (:body response) => "Permission already exists, derpy!")))))
+            (:body response) => "Permission already exists, derpy!"))
+
+       (fact "DELETE to /caas/users/:id/permissions deletes a permission for a given user"
+        (let [such_perm {:id 108 :name "suchperm" :users_id 108}]
+          (create-permission such_perm)
+          (let [response (app (-> (request :delete "/caas/users/108/permissions")
+                                  (body (generate-string {:name "suchperm"}))
+                                  (content-type "application/json")
+                                  (header "Accept" "application/json")))]
+            (:status response) => 204)))
+
+       (fact "DELETE to /caas/users/:id/permissions returns a 404 if a permission does not exist for the user"
+          (let [response (app (-> (request :delete "/caas/users/108/permissions")
+                                  (body (generate-string {:name "nosuchperm"}))
+                                  (content-type "application/json")
+                                  (header "Accept" "application/json")))]
+            (:status response) => 404
+            (:body response) => "Resource not found.")))))

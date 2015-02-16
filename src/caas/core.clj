@@ -15,7 +15,7 @@
             [buddy.sign.jws :as jws]
             [buddy.core.keys :as keys]
             [cheshire.core :refer :all]
-            [compojure.core :refer [context defroutes ANY GET POST routes]]))
+            [compojure.core :refer [context defroutes ANY GET POST DELETE routes]]))
 
 ;; create key instances
 (def ec-privkey (keys/private-key "ecprivkey.pem"))
@@ -61,13 +61,12 @@
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [context] (if-let [user (find-by :user_id (Integer/parseInt id))]
-                           {:permissions (:permissions user)}))
-  :handle-ok (fn [context] (get context :permissions)))
+                           {::permissions (:permissions user)}))
+  :handle-ok (fn [context] (get context ::permissions)))
 
 (defresource create-user-permission [user-id]
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :can-post-to-missing? false
   :post! (fn [context] (let [body (slurp (get-in context [:request :body]))]
                         (if-not (create-permission (parse-string body) )
                             {::conflict true})))
@@ -75,12 +74,21 @@
                     (when conflict
                       (ring-response {:status 409 :body "Permission already exists, derpy!"}))))
 
+(defresource delete-user-permission [user-id]
+  :allowed-methods [:get :delete]
+  :available-media-types ["application/json"]
+  :exists? (fn [context] (let [perm-name (get (parse-string (slurp (get-in context [:request :body]))) "name")]
+                           (if-let [user-perm (user-permissions-for-name (Integer/parseInt user-id) perm-name)]
+                             {::user-perm user-perm })))
+  :delete! (fn [context] (delete-permission (get context ::user-perm))))
+
 (defroutes app
   (ANY "/" [] home)
   (ANY "/caas/authenticate" [] authenticate-user)
   (ANY "/caas/authorize" [] authorize-user)
   (POST "/caas/users/:id/permissions" [id] (create-user-permission id))
-  (GET "/caas/users/:id/permissions" [id] (user-permissions id)))
+  (GET "/caas/users/:id/permissions" [id] (user-permissions id))
+  (DELETE "/caas/users/:id/permissions" [id] (delete-user-permission id)))
 
 ;; Create an instance of auth backend.
 

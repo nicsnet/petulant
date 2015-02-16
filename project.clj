@@ -48,6 +48,6 @@
                    :caas-db-user "caas_test"
                    :caas-db-pass "cassonade_test"
                    :caas-db-host "localhost"
-                   :caas-db-port "15432"}}})
+                   :caas-db-port "5432"}}})
 
 

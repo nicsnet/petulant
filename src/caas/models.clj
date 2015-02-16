@@ -13,7 +13,7 @@
 
 (defentity permissions
   (belongs-to users)
-  (entity-fields :name))
+  (entity-fields :name :users_id :id))
 
 (defentity users
   (has-many permissions)

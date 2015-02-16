@@ -15,14 +15,22 @@ This project is still heavily under development, so setting things up is still a
 The database URL is set in an ENV variable: CAAS_DB_URL
 
 Mine looks like this: CAAS_DB_URL=jdbc:postgresql://localhost:15432/caas?user=caas&password=cassonade
+If your postgres instance is running on the default port, use something like: jdbc:postgresql://localhost:5432/caas?user=caas&password=cassonade
 
 The database port may be different on your machine.
 
 
 One you've created a database named: caas with the user: caas and password: cassonade things are good to go, and you can run migrations with ragtime
 
-```clojure
+```bash
 lein ragtime migrate
+```
+
+To migrate the test database do:
+
+```bash
+export CAAS_DB_URL_TEST='jdbc:postgresql://localhost:5432/caas_test?user=caas_test&password=cassonade_test'
+lein with-profile test ragtime migrate
 ```
 
 Then you can fire up a repl and create your first user.
@@ -43,13 +51,13 @@ This creates a user with the email "foo@baz.de" and stores the password in a has
 
 Start the server with
 
-```clojure
+```bash
 lein ring server
 ```
 
 This starts a server on http://localhost:3000
 
-```
+```bash
 curl -v -X GET http://localhost:3000/caas/authenticate\?email\=foo@baz.de\&password\=foobaz
 ```
 
