@@ -38,6 +38,28 @@ namespace :deploy do
   end
 end
 
+namespace :runit do
+  namespace :caas do
+    task :enable do
+      enable_service('caas')
+    end
+
+    task :stop do
+      stop_service('caas')
+    end
+
+    task :start do
+      start_service('caas')
+    end
+
+    task :restart do
+      stop_service('caas')
+      start_service('caas')
+    end
+  end
+end
+
+
 # TODO: Remove comment when config files are setup.
 # before 'deploy:updated', 'deploy:fetch_configs'
 # namespace :deploy do

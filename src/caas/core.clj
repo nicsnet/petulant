@@ -68,14 +68,17 @@
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (fn [context] (let [body (slurp (get-in context [:request :body]))]
-                        (if-not (create-permission (parse-string body) )
+                        (if-let [perm (create-permission (parse-string body))]
+                            {::resource perm}
                             {::conflict true})))
-  :handle-created (fn [{conflict ::conflict}]
-                    (when conflict
-                      (ring-response {:status 409 :body "Permission already exists, derpy!"}))))
+
+  :handle-created (fn [context]
+                    (if (::conflict context)
+                      (ring-response {:status 409 :body "Permission already exists, derpy!"})
+                      (::resource context))))
 
 (defresource delete-user-permission [user-id]
-  :allowed-methods [:get :delete]
+  :allowed-methods [:delete]
   :available-media-types ["application/json"]
   :exists? (fn [context] (let [perm-name (get (parse-string (slurp (get-in context [:request :body]))) "name")]
                            (if-let [user-perm (user-permissions-for-name (Integer/parseInt user-id) perm-name)]

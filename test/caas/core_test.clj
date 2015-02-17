@@ -31,7 +31,8 @@
                                 (body (generate-string perm) )
                                 (content-type "application/json")
                                 (header "Accept" "application/json")))]
-            (:status response) => 201))
+            (:status response) => 201
+            (:body response) => "{\"name\":\"suchpermission\",\"users_id\":42,\"id\":88}"))
 
       (fact "POST to /caas/users/:id/permissions does not create a new permission if this permission already exists for the user"
         (create-permission perm)
