@@ -1,5 +1,5 @@
 (ns caas.core
-  (:use caas.models liberator.core
+  (:use caas.models liberator.core caas.jwt
         [liberator.representation :only [ring-response]])
  (:require  [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :as reload]
@@ -11,16 +11,14 @@
             [buddy.auth.backends.token :refer :all]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [buddy.hashers :as hashers]
-            [buddy.sign.generic :refer [sign unsign]]
-            [buddy.sign.jws :as jws]
-            [buddy.core.keys :as keys]
             [cheshire.core :refer :all]
             [compojure.core :refer [context defroutes ANY GET POST DELETE routes]]))
 
-;; create key instances
-(def ec-privkey (keys/private-key "ecprivkey.pem"))
-
-(def ec-pubkey (keys/public-key "ecpubkey.pem"))
+(defn- json-payload [context]
+  (-> context
+    (get-in [:request :body])
+    slurp
+    parse-string))
 
 ;; authorized?, then allowed?
 
@@ -33,12 +31,12 @@
                    email (get-in context [:request :params "email"])]
              (if-let [user (user-find-by-email email)]
                (if (hashers/check password (get user :password))
-                 {:token (jws/sign (dissoc user :password) ec-privkey {:alg :es256})}))))
+                 {:token (sign (dissoc user :password))}))))
 
-  :handle-not-found (fn [_] (throw-unauthorized))
-  :handle-ok (fn [context] (get context :token))
-  :post! (fn [_] [true])
-  :handle-created (fn [context] (get context :token)))
+  :handle-not-found throw-unauthorized
+  :handle-ok :token
+  :post! true
+  :handle-created :token)
 
 (defresource authorize-user
   :allowed-methods [:get]
@@ -46,31 +44,30 @@
   :exists? (fn [context]
              (if-let [token (get-in context [:request :params "token"])]
                (try
-                 (jws/unsign token ec-pubkey {:alg :es256})
+                 (unsign token)
                  (catch Exception e (throw-unauthorized)))))
 
-  :handle-not-found (fn [_] (throw-unauthorized))
-  :handle-ok (fn [context] (get context :permissions)))
+  :handle-not-found throw-unauthorized
+  :handle-ok :permissions)
 
 (defresource home
   :allowed-methods [:get]
   :available-media-types ["application/json"]
-  :handle-ok (fn [_] "Hello Internetz."))
+  :handle-ok "Hello Internetz.")
 
 (defresource user-permissions [id]
   :allowed-methods [:get]
   :available-media-types ["application/json"]
   :exists? (fn [context] (if-let [user (find-by :user_id (Integer/parseInt id))]
                            {::permissions (:permissions user)}))
-  :handle-ok (fn [context] (get context ::permissions)))
+  :handle-ok ::permissions)
 
 (defresource create-user-permission [user-id]
   :allowed-methods [:post]
   :available-media-types ["application/json"]
-  :post! (fn [context] (let [body (slurp (get-in context [:request :body]))]
-                        (if-let [perm (create-permission (parse-string body))]
-                            {::resource perm}
-                            {::conflict true})))
+  :post! (fn [context] (if-let [perm (create-permission (conj {"users_id" (Integer/parseInt user-id)} (json-payload context)))]
+                          {::resource perm}
+                          {::conflict true}))
 
   :handle-created (fn [context]
                     (if (::conflict context)
@@ -80,10 +77,10 @@
 (defresource delete-user-permission [user-id]
   :allowed-methods [:delete]
   :available-media-types ["application/json"]
-  :exists? (fn [context] (let [perm-name (get (parse-string (slurp (get-in context [:request :body]))) "name")]
+  :exists? (fn [context] (let [perm-name (get (json-payload context) "name")]
                            (if-let [user-perm (user-permissions-for-name (Integer/parseInt user-id) perm-name)]
                              {::user-perm user-perm })))
-  :delete! (fn [context] (delete-permission (get context ::user-perm))))
+  :delete! (comp delete-permission ::user-perm))
 
 (defroutes app
   (ANY "/" [] home)

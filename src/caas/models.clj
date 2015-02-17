@@ -12,10 +12,11 @@
 (declare users)
 
 (defentity permissions
-  (belongs-to users)
+  (belongs-to users {:fk :user_id})
   (entity-fields :name :users_id :id))
 
 (defentity users
+  (pk :user_id)
   (has-many permissions)
   (entity-fields :id :email :password :user_id))
 

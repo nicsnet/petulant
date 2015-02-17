@@ -70,7 +70,7 @@ eyJ0eXAiOiJKV1MiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZvb0BiYXouZGUifQ.RA9A1xT_YJ-X
 Once the token for this authenticated user is obtained, it can be used to query for permissions, e.g.
 
 ```
-curl -v -X GET http://localhost:3000/caas/permissions\?token=
+curl -v -X GET http://localhost:3000/caas/authorize\?token=
 eyJ0eXAiOiJKV1MiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImZvb0BiYXouZGUifQ.RA9A1xT_YJ-Xi5_2B9nASNgQ5FKGXOai1yy0nWqgq7k%
 ```
 
