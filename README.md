@@ -1,7 +1,3 @@
-# caas
-
-Crealytics Authentication and Authorisation Service.
-
 A 'micro service' designed to authenticate users returning a generated JWS token for authorisation purposes.
 
 ## Prerequisites

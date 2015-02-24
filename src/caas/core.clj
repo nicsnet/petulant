@@ -1,7 +1,7 @@
 (ns caas.core
   (:use caas.models liberator.core caas.jwt
         [liberator.representation :only [ring-response]])
- (:require  [ring.middleware.params :refer [wrap-params]]
+  (:require  [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.reload :as reload]
             [ring.middleware.session :refer [wrap-session]]
             [org.httpkit.server :as http-kit]
@@ -16,9 +16,9 @@
 
 (defn- json-payload [context]
   (-> context
-    (get-in [:request :body])
-    slurp
-    parse-string))
+      (get-in [:request :body])
+      slurp
+      parse-string))
 
 ;; authorized?, then allowed?
 
@@ -29,9 +29,9 @@
   :exists? (fn [context]
              (let [password (get-in context [:request :params "password"])
                    email (get-in context [:request :params "email"])]
-             (if-let [user (user-find-by-email email)]
-               (if (hashers/check password (get user :password))
-                 {:token (sign (dissoc user :password))}))))
+               (if-let [user (user-find-by-email email)]
+                 (if (hashers/check password (get user :password))
+                   {:token (sign (dissoc user :password))}))))
 
   :handle-not-found throw-unauthorized
   :handle-ok :token
@@ -66,8 +66,8 @@
   :allowed-methods [:post]
   :available-media-types ["application/json"]
   :post! (fn [context] (if-let [perm (create-permission (conj {"users_id" (Integer/parseInt user-id)} (json-payload context)))]
-                          {::resource perm}
-                          {::conflict true}))
+                         {::resource perm}
+                         {::conflict true}))
 
   :handle-created (fn [context]
                     (if (::conflict context)
@@ -96,7 +96,7 @@
   (session-backend))
 
 (def handler
-    (-> app
+  (-> app
       (wrap-params)
       (wrap-authorization auth-backend)
       (wrap-authentication auth-backend)
@@ -116,8 +116,8 @@
 (defn- start-server [port args]
   (reset! server
           (http-kit/run-server
-           (if (dev? args) (reload/wrap-reload app) app)
-           {:port port})))
+            (if (dev? args) (reload/wrap-reload app) app)
+            {:port port})))
 
 (defn- stop-server []
   (@server))
